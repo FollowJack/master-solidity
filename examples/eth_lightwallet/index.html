@@ -1,0 +1,123 @@
+<html>
+<body>
+
+  <script src="Lightwallet.js"></script>
+  <script src="ethereumjs-tx.js"></script>
+
+  <h1>Hello ETH-Lightwallet</h1>
+
+  <script>
+
+  console.log('Works')
+
+  var lightwallet = lightwallet
+  var keystore = lightwallet.keystore
+  var txutils = lightwallet.txutils
+  var signing = lightwallet.signing
+  var encryption = lightwallet.encryption
+
+  var ethereumTx = ethereumjs.Tx
+
+  console.log(lightwallet)
+  console.log(ethereumTx)
+
+  const password = "12345678"
+  const seedPhrase = keystore.generateRandomSeed();
+  const hdPath = "m/0'/0'/0'"
+  //const salt = "VPUp8AjxIo8vwmmNfvfgeng9QtAULKs/f40qUl80glo="
+
+  let keyStoreNew
+
+  console.log('Generated seedphrase: ')
+  console.log(seedPhrase)
+
+
+  let callbackDerivedKeyByPassword = (err, _passwordEncryptedDerivedKey) => {
+    if (err) throw err
+
+    console.log('A derived key by a password')
+    console.log('Key is 32*8 Bits = 32 Bytes')
+    console.log('1 Byte = 8 Bit ')
+    console.log('Result is an Uint8 array with the size of 32')
+    console.log(_passwordEncryptedDerivedKey)
+
+    console.log()
+    console.log('Check if derived key is correct ')
+    console.log(keyStoreNew.isDerivedKeyCorrect(_passwordEncryptedDerivedKey))
+
+    // generate five new address/private key pairs
+    // the corresponding private keys are also encrypted
+    keyStoreNew.generateNewAddress(_passwordEncryptedDerivedKey, 2)
+    var addresses = keyStoreNew.getAddresses()
+
+    console.log()
+    console.log('Print addresses:')
+    console.log(addresses)
+
+    let seed = keyStoreNew.getSeed(_passwordEncryptedDerivedKey)
+    console.log('Get seed based from private key')
+    console.log(seed)
+
+    let publicKey = encryption.addressToPublicEncKey(keyStoreNew, _passwordEncryptedDerivedKey, addresses[0])
+    console.log(`Get public enc key to address ${addresses[0]}`)
+    console.log(publicKey)
+
+    keyStoreNew.passwordProvider = function (callback) {
+      callback(null, password);
+    }
+
+    var randomNonce = "QajgrB9VtnZXnp6eFzJLIhI7N0wbEI8f"
+
+    var tx = new ethereumTx({
+      nonce: randomNonce,
+      gasPrice: "0xea",
+      gasLimit: 100000,
+      to: addresses[0],
+      value: 0,
+      data: 'data',
+    });
+    //tx.sign(ethereumjs.Buffer.Buffer.from(_passwordEncryptedDerivedKey, 'hex'));
+
+    var rawTx = '0x' + tx.serialize().toString('hex');
+
+    let signedTnx = signing.signTx(keyStoreNew, _passwordEncryptedDerivedKey, rawTx, addresses[0])
+    console.log("Get signed transaction")
+    console.log(signedTnx)
+
+
+    // TODO: Encryption
+
+  }
+
+  let callbackKeyStoreCreation = (_err, _keyStoreNew) => {
+    if (_err) throw _err
+
+    keyStoreNew = _keyStoreNew
+
+    console.log('Keystore has an encrypted hd root priv and a nonce')
+    console.log(keyStoreNew)
+    console.log('HD Root priv')
+    console.log(keyStoreNew.encHdRootPriv.encStr)
+    console.log('Nonce')
+    console.log(keyStoreNew.encHdRootPriv.nonce)
+
+
+    // Some methods will require providing the `pwDerivedKey`,
+    // Allowing you to only decrypt private keys on an as-needed basis.
+    // You can generate that value with this convenient method:
+    keyStoreNew.keyFromPassword(password, callbackDerivedKeyByPassword)
+  }
+
+  keystore.createVault({
+    password: password,
+    seedPhrase: seedPhrase, // Optionally provide a 12-word seed phrase
+    // salt: salt,     // Optionally provide a salt.
+    // A unique salt will be generated otherwise.
+    hdPathString: hdPath    // Optional custom HD Path String
+  },  callbackKeyStoreCreation)
+
+  </script>
+
+
+</body>
+</html>

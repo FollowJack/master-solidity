@@ -1,0 +1,26 @@
+{
+  "name": "eth_lightwallet",
+  "version": "0.0.1",
+  "description": "Lightwallet example for deeper understanding",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FollowJack/master-solidity.git"
+  },
+  "keywords": [
+    "lightwallet"
+  ],
+  "author": "FollowJack",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/FollowJack/master-solidity/issues"
+  },
+  "homepage": "https://github.com/FollowJack/master-solidity#readme",
+  "dependencies": {
+    "eth-lightwallet": "^3.0.1",
+    "ethereumjs-tx": "^1.3.5"
+  }
+}
